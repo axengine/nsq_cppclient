@@ -3,10 +3,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef void (*HANDLER)(const char *msg);
+typedef void (*HANDLER)(const char *topic,const char *msg);
 HANDLER callback;
 
-void init_nsq_consumer(const char *topic,const char *channel,const char *nsqlookupdDomain,int nsqlookupdPort,HANDLER handle);
+void init_nsq_consumer(const char **topic,const char *channel,const char *nsqlookupdDomain,int nsqlookupdPort,HANDLER handle);
 
 #ifdef __cplusplus
 	}

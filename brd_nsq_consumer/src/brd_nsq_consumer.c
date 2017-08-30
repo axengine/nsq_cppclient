@@ -3,7 +3,7 @@
 
 void message_handler(struct NSQReader *rdr, struct NSQDConnection *conn, struct NSQMessage *msg, void *ctx);
 
-void init_nsq_consumer(const char *topic,const char *channel,const char *nsqlookupdDomain,int nsqlookupdPort,HANDLER handle)
+void init_nsq_consumer(const char *topic[],const char *channel,const char *nsqlookupdDomain,int nsqlookupdPort,HANDLER handle)
 {
     callback = handle;
     struct NSQReader *rdr;
@@ -11,11 +11,13 @@ void init_nsq_consumer(const char *topic,const char *channel,const char *nsqlook
     void *ctx = NULL; //(void *)(new TestNsqMsgContext());
 
     loop = ev_default_loop(0);
-    rdr = new_nsq_reader(loop, topic, channel, (void *)ctx,
-        NULL, NULL, NULL, message_handler);
-
-    //nsq_reader_connect_to_nsqd(rdr, "115.28.128.9", 4150);
-    nsq_reader_add_nsqlookupd_endpoint(rdr, nsqlookupdDomain, nsqlookupdPort);
+	int i = 0;
+	while(topics[i]!=NULL){
+		rdr = new_nsq_reader(loop, topics[i], channel, (void *)ctx,
+			   NULL, NULL, NULL, message_handler);
+		nsq_reader_add_nsqlookupd_endpoint(rdr, nsqlookupdDomain, nsqlookupdPort);
+		i++;
+	}
     nsq_run(loop);
 }
 
@@ -23,7 +25,7 @@ void init_nsq_consumer(const char *topic,const char *channel,const char *nsqlook
 void message_handler(struct NSQReader *rdr, struct NSQDConnection *conn, struct NSQMessage *msg, void *ctx)
 {
     if(callback!=NULL)
-        callback(msg->body);
+        callback(rdr->topic,msg->body);
     buffer_reset(conn->command_buf);
 
 	nsq_finish(conn->command_buf, msg->id);
